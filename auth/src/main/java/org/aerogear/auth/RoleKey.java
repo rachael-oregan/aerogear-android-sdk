@@ -1,8 +1,6 @@
 package org.aerogear.auth;
 
-/**
- * Created by rachael on 25/01/2018.
- */
+import java.util.Objects;
 
 public class RoleKey {
 
@@ -16,6 +14,11 @@ public class RoleKey {
         this.clientID = clientID;
     }
 
+    public RoleKey(final String roleName, final RoleType roleType){
+        this.roleName = roleName;
+        this.roleType = roleType;
+    }
+
     @Override
     public boolean equals(final Object roleKey) {
         if (this == roleKey) return true;
@@ -26,5 +29,10 @@ public class RoleKey {
         } else {
             return ((RoleKey) roleKey).roleName.equals(roleName) && ((RoleKey) roleKey).roleType == roleType;
         }
+    }
+
+    @Override
+    public int hashCode(){
+        return Objects.hash(roleName, roleType);
     }
 }

@@ -15,7 +15,7 @@ public interface IUserPrincipal extends Principal {
      * @param role role to be checked
      * @return true or false
      */
-    boolean hasRole(IRole role);
+    boolean hasRole(String role, RoleType type);
 
     /**
      * Returns the username

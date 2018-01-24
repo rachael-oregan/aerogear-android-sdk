@@ -8,7 +8,6 @@ import org.aerogear.auth.credentials.ICredential;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.ListIterator;
 
 /**
  * This class represent an authenticated user
@@ -122,6 +121,7 @@ public class UserPrincipalImpl extends AbstractPrincipal {
     public boolean hasRole(final IRole role) {
 //        TODO: to be implemented
 //        return roles.containsKey(role.getRoleName());
+        return false;
     }
 
     @Override

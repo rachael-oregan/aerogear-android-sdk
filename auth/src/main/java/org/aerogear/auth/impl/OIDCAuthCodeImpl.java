@@ -43,24 +43,25 @@ public class OIDCAuthCodeImpl extends OIDCTokenAuthenticatorImpl {
      */
     @Override
     public Principal authenticate(final ICredential credential) {
+        UserPrincipalImpl user = null;
         try {
-            return UserPrincipalImpl
+            userIdentity = getIdentityInformation(credential);
+            user = UserPrincipalImpl
                     .newUser()
                     .withAuthenticator(this)
-                    .withUsername(getUsername(credential))
+                    .withUsername(parseUsername())
                     .withCredentials(credential)
-                    .withEmail(getEmail())
-                    .withRoles(getRoles())
+                    .withEmail(parseEmail())
+                    .withRoles(parseRoles())
                     .build();
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
+    return user;
     }
 
-    private String getUsername(ICredential credential) throws JSONException {
+    private String parseUsername() throws JSONException {
         String username = "Unknown Username";
-        userIdentity = getIdentityInformation(credential);
         if (userIdentity != null) {
             // get the users username
             if (userIdentity.has(USERNAME) && userIdentity.getString(USERNAME).length() > 0) {
@@ -70,7 +71,7 @@ public class OIDCAuthCodeImpl extends OIDCTokenAuthenticatorImpl {
         return username;
     }
 
-    private String getEmail() throws JSONException {
+    private String parseEmail() throws JSONException {
         String emailAddress = "Unknown Email";
         if (userIdentity != null) {
             // get the users email
@@ -81,14 +82,14 @@ public class OIDCAuthCodeImpl extends OIDCTokenAuthenticatorImpl {
         return emailAddress;
     }
 
-    private List<IRole> getRoles() throws JSONException {
+    private List<IRole> parseRoles() throws JSONException {
         List<IRole> roles = new ArrayList();
         if (userIdentity != null) {
-            List<RealmRole> realmRoles = getRealmRoles();
+            List<RealmRole> realmRoles = parseRealmRoles();
             if (realmRoles != null) {
                 roles.addAll(realmRoles);
             }
-            List<ClientRole> clientRoles = getClientRoles();
+            List<ClientRole> clientRoles = parseClientRoles();
             if (clientRoles != null) {
                 roles.addAll(clientRoles);
             }
@@ -96,7 +97,7 @@ public class OIDCAuthCodeImpl extends OIDCTokenAuthenticatorImpl {
         return roles;
     }
 
-    private List<RealmRole> getRealmRoles() throws JSONException {
+    private List<RealmRole> parseRealmRoles() throws JSONException {
         List realmRoles = new ArrayList<RealmRole>();
         if (userIdentity.has(REALM) && userIdentity.getJSONObject(REALM).has(ROLES)) {
             String tokenRealmRolesJSON = userIdentity.getJSONObject(REALM).getString(ROLES);
@@ -108,7 +109,7 @@ public class OIDCAuthCodeImpl extends OIDCTokenAuthenticatorImpl {
         return realmRoles;
     }
 
-    private List<ClientRole> getClientRoles() throws JSONException {
+    private List<ClientRole> parseClientRoles() throws JSONException {
         List clientRoles = new ArrayList<ClientRole>();
 
         AuthServiceConfig authConfig = this.getConfig();

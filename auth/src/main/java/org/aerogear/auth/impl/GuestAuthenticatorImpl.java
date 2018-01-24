@@ -6,7 +6,8 @@ import org.aerogear.auth.IRole;
 import org.aerogear.auth.credentials.ICredential;
 
 import java.security.Principal;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Simple authenticator to return 'guest' users.
@@ -22,21 +23,19 @@ public class GuestAuthenticatorImpl extends AbstractAuthenticator {
     /**
      * Roles to be assigned to the guest user
      */
-    private final IRole[] roles;
+    private final List<IRole> roles;
 
     /**
      * Builds a new guest authenticator object
      * @param guestUser the user to be returned after the 'authentication'
      * @param roles the roles to be assigned to the user
      */
-    public GuestAuthenticatorImpl(final String guestUser, final IRole[] roles) {
+    public GuestAuthenticatorImpl(final String guestUser, final List<IRole> roles) {
         super(null);
         this.guestUser = guestUser;
-        if (roles == null) {
-            this.roles = new IRole[0];
-        }
-        else {
-            this.roles = Arrays.copyOf(roles, roles.length);
+        this.roles = new ArrayList<>();
+        if (roles != null) {
+            this.roles.addAll(roles);
         }
     }
 

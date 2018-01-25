@@ -3,11 +3,13 @@ package org.aerogear.auth.impl;
 import org.aerogear.auth.AbstractAuthenticator;
 import org.aerogear.auth.AbstractPrincipal;
 import org.aerogear.auth.IRole;
+import org.aerogear.auth.RoleKey;
 import org.aerogear.auth.credentials.ICredential;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This class represent an authenticated user
@@ -27,7 +29,7 @@ public class UserPrincipalImpl extends AbstractPrincipal {
     /**
      * Roles associated with this principal.
      */
-    private final List<IRole> roles;
+    private final Map<RoleKey, IRole> roles;
 
     /**
      * User credentials. It can be null.
@@ -45,12 +47,12 @@ public class UserPrincipalImpl extends AbstractPrincipal {
     protected UserPrincipalImpl(final String username,
                               final ICredential credentials,
                               final String email,
-                              final List<IRole> roles,
+                              final Map<RoleKey, IRole> roles,
                               final AbstractAuthenticator authenticator) {
         super(authenticator);
         this.username = username;
         this.email = email;
-        this.roles = roles;
+        this.roles = Collections.unmodifiableMap(new HashMap<RoleKey, IRole>(roles));
         this.credentials = credentials;
     }
 
@@ -58,10 +60,10 @@ public class UserPrincipalImpl extends AbstractPrincipal {
      * Builds and return a UserPrincipalImpl object
      */
     static class Builder {
-        protected String username;
-        protected String email;
-        protected Map<String, IRole> roles = new HashMap<>();
-        protected AbstractAuthenticator authenticator;
+        private String username;
+        private String email;
+        private Map<RoleKey, IRole> roles = new HashMap<>();
+        private AbstractAuthenticator authenticator;
         protected ICredential credentials;
 
         protected Builder() {
@@ -83,11 +85,20 @@ public class UserPrincipalImpl extends AbstractPrincipal {
         }
 
         Builder withRole(final IRole role) {
-            this.roles.add(role);
+            RoleKey roleKey = new RoleKey(role);
+            this.roles.put(roleKey, role);
             return this;
         }
 
-        Builder withRoles(final List<IRole> roles) {
+        Builder withRoles(final Map<RoleKey, IRole> roles) {
+            if (roles != null) {
+                return withRoles(Collections.unmodifiableMap(roles));
+            } else {
+                return this;
+            }
+        }
+
+        Builder withRoles(final Collection<IRole> roles) {
 
             if (roles != null) {
                 for (IRole role : roles) {
@@ -119,9 +130,8 @@ public class UserPrincipalImpl extends AbstractPrincipal {
      */
     @Override
     public boolean hasRole(final IRole role) {
-//        TODO: to be implemented
-//        return roles.containsKey(role.getRoleName());
-        return false;
+        // TODO: to be implemented
+        throw new IllegalStateException("Not implemented");
     }
 
     @Override
@@ -131,7 +141,7 @@ public class UserPrincipalImpl extends AbstractPrincipal {
 
     @Override
     public Collection<IRole> getRoles() {
-        return roles;
+        return roles.values();
     }
 
     @Override
@@ -148,7 +158,7 @@ public class UserPrincipalImpl extends AbstractPrincipal {
         return "UserPrincipalImpl{" +
                 "username='" + username + '\'' +
                 ", email='" + email + '\'' +
-                ", roles=" + roles +
+                ", roles=" + roles.values() +
                 '}';
     }
 }

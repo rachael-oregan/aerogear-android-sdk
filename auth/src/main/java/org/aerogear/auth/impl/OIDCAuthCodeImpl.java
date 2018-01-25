@@ -7,15 +7,15 @@ import org.aerogear.auth.AuthServiceConfig;
 import org.aerogear.auth.ClientRole;
 import org.aerogear.auth.IRole;
 import org.aerogear.auth.RealmRole;
+import org.aerogear.auth.RoleKey;
 import org.aerogear.auth.credentials.ICredential;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -82,35 +82,39 @@ public class OIDCAuthCodeImpl extends OIDCTokenAuthenticatorImpl {
         return emailAddress;
     }
 
-    private List<IRole> parseRoles() throws JSONException {
-        List<IRole> roles = new ArrayList();
+    private Map<RoleKey, IRole> parseRoles() throws JSONException {
+        Map<RoleKey, IRole> roles = new HashMap<>();
         if (userIdentity != null) {
-            List<RealmRole> realmRoles = parseRealmRoles();
+            Map<RoleKey, IRole> realmRoles = parseRealmRoles();
             if (realmRoles != null) {
-                roles.addAll(realmRoles);
+                roles.putAll(realmRoles);
             }
-            List<ClientRole> clientRoles = parseClientRoles();
+            Map<RoleKey, IRole> clientRoles = parseClientRoles();
             if (clientRoles != null) {
-                roles.addAll(clientRoles);
+                roles.putAll(clientRoles);
             }
         }
         return roles;
     }
 
-    private List<RealmRole> parseRealmRoles() throws JSONException {
-        List realmRoles = new ArrayList<RealmRole>();
+    private Map<RoleKey, IRole> parseRealmRoles() throws JSONException {
+        Map<RoleKey, IRole> realmRoles = new HashMap<>();
         if (userIdentity.has(REALM) && userIdentity.getJSONObject(REALM).has(ROLES)) {
             String tokenRealmRolesJSON = userIdentity.getJSONObject(REALM).getString(ROLES);
 
-            String realmRolesString = tokenRealmRolesJSON.substring(1, tokenRealmRolesJSON.length() - 1); //remove the array brackets
+            String realmRolesString = tokenRealmRolesJSON.substring(1, tokenRealmRolesJSON.length() - 1);
             String roles[] = realmRolesString.split(COMMA);
-            realmRoles = Arrays.asList(roles);
+
+            for (String rolename : roles) {
+                RealmRole realmRole = new RealmRole(rolename);
+                realmRoles.put(new RoleKey(realmRole), realmRole);
+            }
         }
         return realmRoles;
     }
 
-    private List<ClientRole> parseClientRoles() throws JSONException {
-        List clientRoles = new ArrayList<ClientRole>();
+    private Map<RoleKey, IRole> parseClientRoles() throws JSONException {
+        Map<RoleKey, IRole> clientRoles = new HashMap<>();
 
         AuthServiceConfig authConfig = this.getConfig();
         JSONObject authJSON =  authConfig.toJSON();
@@ -124,7 +128,11 @@ public class OIDCAuthCodeImpl extends OIDCTokenAuthenticatorImpl {
 
                 String clientRolesString = tokenClientRolesJSON.substring(1, tokenClientRolesJSON.length() - 1);
                 String roles[] = clientRolesString.split(COMMA);
-                clientRoles = Arrays.asList(roles);
+
+                for (String rolename : roles) {
+                    ClientRole clientRole = new ClientRole(rolename);
+                    clientRoles.put(new RoleKey(clientRole), clientRole);
+                }
             }
         }
         return clientRoles;

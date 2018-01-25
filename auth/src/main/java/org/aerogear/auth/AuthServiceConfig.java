@@ -10,6 +10,6 @@ public class AuthServiceConfig {
 
     public JSONObject toJSON() {
         // TODO: to be implemented.
-        return null;
+        throw new IllegalStateException("Not implemented");
     }
 }

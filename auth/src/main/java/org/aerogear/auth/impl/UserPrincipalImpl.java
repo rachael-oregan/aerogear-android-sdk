@@ -6,6 +6,7 @@ import org.aerogear.auth.IRole;
 import org.aerogear.auth.RoleKey;
 import org.aerogear.auth.credentials.ICredential;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -90,9 +91,9 @@ public class UserPrincipalImpl extends AbstractPrincipal {
             return this;
         }
 
-        Builder withRoles(final Map<RoleKey, IRole> roles) {
+        Builder withRoles(final IRole[] roles) {
             if (roles != null) {
-                return withRoles(Collections.unmodifiableMap(roles));
+                return withRoles(Arrays.asList(roles));
             } else {
                 return this;
             }

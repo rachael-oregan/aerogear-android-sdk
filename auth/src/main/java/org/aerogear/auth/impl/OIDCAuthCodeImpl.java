@@ -1,9 +1,9 @@
 package org.aerogear.auth.impl;
 
 import android.util.Base64;
-import android.util.Log;
 
 import org.aerogear.auth.AuthServiceConfig;
+import org.aerogear.auth.AuthenticationException;
 import org.aerogear.auth.ClientRole;
 import org.aerogear.auth.IRole;
 import org.aerogear.auth.RealmRole;
@@ -15,6 +15,7 @@ import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,12 +44,12 @@ public class OIDCAuthCodeImpl extends OIDCTokenAuthenticatorImpl {
      * @return authenticated Principal
      */
     @Override
-    public Principal authenticate(final ICredential credential) {
+    public Principal authenticate(final ICredential credential) throws AuthenticationException {
         if (credential instanceof OIDCCredentials == false) throw new IllegalArgumentException("Invalid Credentials");
-        UserPrincipalImpl user = null;
+        UserPrincipalImpl user;
         try {
             userIdentity = getIdentityInformation(credential);
-            user = UserPrincipalImpl
+           user = UserPrincipalImpl
                     .newUser()
                     .withAuthenticator(this)
                     .withUsername(parseUsername())
@@ -57,7 +58,7 @@ public class OIDCAuthCodeImpl extends OIDCTokenAuthenticatorImpl {
                     .withRoles(parseRoles())
                     .build();
         } catch (JSONException e) {
-            e.printStackTrace();
+            throw new AuthenticationException(e.getMessage(), e.getCause());
         }
     return user;
     }
@@ -84,16 +85,16 @@ public class OIDCAuthCodeImpl extends OIDCTokenAuthenticatorImpl {
         return emailAddress;
     }
 
-    private Map<RoleKey, IRole> parseRoles() throws JSONException {
-        Map<RoleKey, IRole> roles = new HashMap<>();
+    private Collection<IRole> parseRoles() throws JSONException {
+        Collection<IRole> roles = null;
         if (userIdentity != null) {
             Map<RoleKey, IRole> realmRoles = parseRealmRoles();
             if (realmRoles != null) {
-                roles.putAll(realmRoles);
+                roles.addAll(realmRoles.values());
             }
             Map<RoleKey, IRole> clientRoles = parseClientRoles();
             if (clientRoles != null) {
-                roles.putAll(clientRoles);
+                roles.addAll(realmRoles.values());
             }
         }
         return roles;
@@ -140,9 +141,9 @@ public class OIDCAuthCodeImpl extends OIDCTokenAuthenticatorImpl {
         return clientRoles;
     }
 
-    private JSONObject getIdentityInformation(final ICredential credential) throws JSONException {
-        String accessToken = credential.getAccessToken();
-        JSONObject decodedIdentityData = new JSONObject();
+    private JSONObject getIdentityInformation(final ICredential credential) throws JSONException, AuthenticationException {
+        String accessToken = ((OIDCCredentials) credential).getAccessToken();
+        JSONObject decodedIdentityData;
 
         try {
             // Decode the Access Token to Extract the Identity Information
@@ -152,11 +153,11 @@ public class OIDCAuthCodeImpl extends OIDCTokenAuthenticatorImpl {
             try {
                 decodedIdentityData = new JSONObject(decoded);
             } catch (JSONException e) {
-                e.printStackTrace();
+                throw new AuthenticationException(e.getMessage(), e.getCause());
             }
 
         } catch (UnsupportedEncodingException e) {
-            Log.e("", "Error Decoding Access Token", e);
+            throw new AuthenticationException(e.getMessage(), e.getCause());
         }
         return decodedIdentityData;
 

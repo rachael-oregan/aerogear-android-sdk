@@ -9,6 +9,7 @@ import org.aerogear.auth.IRole;
 import org.aerogear.auth.RealmRole;
 import org.aerogear.auth.RoleKey;
 import org.aerogear.auth.credentials.ICredential;
+import org.aerogear.auth.credentials.OIDCCredentials;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -43,6 +44,7 @@ public class OIDCAuthCodeImpl extends OIDCTokenAuthenticatorImpl {
      */
     @Override
     public Principal authenticate(final ICredential credential) {
+        if (credential instanceof OIDCCredentials == false) throw new IllegalArgumentException("Invalid Credentials");
         UserPrincipalImpl user = null;
         try {
             userIdentity = getIdentityInformation(credential);

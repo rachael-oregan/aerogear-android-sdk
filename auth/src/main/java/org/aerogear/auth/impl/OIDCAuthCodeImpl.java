@@ -45,11 +45,10 @@ public class OIDCAuthCodeImpl extends OIDCTokenAuthenticatorImpl {
      */
     @Override
     public Principal authenticate(final ICredential credential) throws AuthenticationException {
-        if (credential instanceof OIDCCredentials == false) throw new IllegalArgumentException("Invalid Credentials");
-        UserPrincipalImpl user;
+        OIDCUserPrincipalImpl user;
         try {
             userIdentity = getIdentityInformation(credential);
-           user = UserPrincipalImpl
+           user = (OIDCUserPrincipalImpl) OIDCUserPrincipalImpl
                     .newUser()
                     .withAuthenticator(this)
                     .withUsername(parseUsername())
@@ -110,7 +109,7 @@ public class OIDCAuthCodeImpl extends OIDCTokenAuthenticatorImpl {
 
             for (String rolename : roles) {
                 RealmRole realmRole = new RealmRole(rolename);
-                realmRoles.put(new RoleKey(realmRole), realmRole);
+                realmRoles.put(new RoleKey(realmRole, null), realmRole);
             }
         }
         return realmRoles;
@@ -123,7 +122,7 @@ public class OIDCAuthCodeImpl extends OIDCTokenAuthenticatorImpl {
         JSONObject authJSON =  authConfig.toJSON();
 
         if (authJSON.has(RESOURCE)) {
-            String initialClientID = authJSON.getJSONObject(RESOURCE).toString();
+            String initialClientID = authJSON.getJSONObject(RESOURCE).toString();  //immediate client role
 
             if (userIdentity.has(CLIENT) && userIdentity.getJSONObject(CLIENT).has(initialClientID)
                     && userIdentity.getJSONObject(CLIENT).getJSONObject(initialClientID).has(ROLES)) {
@@ -133,8 +132,8 @@ public class OIDCAuthCodeImpl extends OIDCTokenAuthenticatorImpl {
                 String roles[] = clientRolesString.split(COMMA);
 
                 for (String rolename : roles) {
-                    ClientRole clientRole = new ClientRole(rolename);
-                    clientRoles.put(new RoleKey(clientRole), clientRole);
+                    ClientRole clientRole = new ClientRole(rolename, initialClientID);
+                    clientRoles.put(new RoleKey(clientRole, initialClientID), clientRole);
                 }
             }
         }
@@ -143,7 +142,7 @@ public class OIDCAuthCodeImpl extends OIDCTokenAuthenticatorImpl {
 
     private JSONObject getIdentityInformation(final ICredential credential) throws JSONException, AuthenticationException {
         String accessToken = ((OIDCCredentials) credential).getAccessToken();
-        JSONObject decodedIdentityData;
+        JSONObject decodedIdentityData = new JSONObject();
 
         try {
             // Decode the Access Token to Extract the Identity Information

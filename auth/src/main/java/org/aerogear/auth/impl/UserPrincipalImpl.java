@@ -4,6 +4,7 @@ import org.aerogear.auth.AbstractAuthenticator;
 import org.aerogear.auth.AbstractPrincipal;
 import org.aerogear.auth.IRole;
 import org.aerogear.auth.RoleKey;
+import org.aerogear.auth.RoleType;
 import org.aerogear.auth.credentials.ICredential;
 
 import java.util.Arrays;
@@ -61,10 +62,10 @@ public class UserPrincipalImpl extends AbstractPrincipal {
      * Builds and return a UserPrincipalImpl object
      */
     static class Builder {
-        private String username;
-        private String email;
-        private Map<RoleKey, IRole> roles = new HashMap<>();
-        private AbstractAuthenticator authenticator;
+        protected String username;
+        protected String email;
+        protected Map<RoleKey, IRole> roles = new HashMap<>();
+        protected AbstractAuthenticator authenticator;
         protected ICredential credentials;
 
         protected Builder() {
@@ -86,7 +87,7 @@ public class UserPrincipalImpl extends AbstractPrincipal {
         }
 
         Builder withRole(final IRole role) {
-            RoleKey roleKey = new RoleKey(role);
+            RoleKey roleKey = role.getRoleType().equals(RoleType.CLIENT) ? new RoleKey(role, role.getClientID()) : new RoleKey(role, null);
             this.roles.put(roleKey, role);
             return this;
         }
@@ -100,13 +101,11 @@ public class UserPrincipalImpl extends AbstractPrincipal {
         }
 
         Builder withRoles(final Collection<IRole> roles) {
-
             if (roles != null) {
                 for (IRole role : roles) {
                     this.withRole(role);
                 }
             }
-
             return this;
         }
 

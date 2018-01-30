@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+
 /**
  * This class represent an authenticated user
  */
@@ -125,13 +126,24 @@ public class UserPrincipalImpl extends AbstractPrincipal {
     }
 
     /**
-     * Returns <code>true</code> if the user has the passed in role.
-     * @return true or false
+     * Checks if the user has the specified Client role.
+     * @param role role to be checked
+     * @param clientId clientID related to role
+     * @return <code>true</code> or <code>false</code>
      */
     @Override
-    public boolean hasRole(final IRole role) {
-        // TODO: to be implemented
-        throw new IllegalStateException("Not implemented");
+    public boolean hasClientRole(final String role, final String clientId) {
+        return roles.containsKey(new RoleKey(role, clientId, RoleType.CLIENT));
+    }
+
+    /**
+     * Checks if the user has the specified Realm role.
+     * @param role role to be checked
+     * @return <code>true</code> or <code>false</code>
+     */
+    @Override
+    public boolean hasRealmRole(final String role){
+        return roles.containsKey(new RoleKey(role, null, RoleType.REALM));
     }
 
     @Override

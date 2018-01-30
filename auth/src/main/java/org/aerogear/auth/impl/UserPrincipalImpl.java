@@ -126,12 +126,24 @@ public class UserPrincipalImpl extends AbstractPrincipal {
     }
 
     /**
-     * Returns <code>true</code> if the user has the passed in role.
-     * @return <code>true</code> if the user has the passed in role.
+     * Checks if the user has the specified Client role.
+     * @param role role to be checked
+     * @param clientId clientID related to role
+     * @return <code>true</code> or <code>false</code>
      */
     @Override
-    public boolean hasRole(final String role, final RoleType type) {
-        return roles.containsKey(new RoleKey(role, type));
+    public boolean hasClientRole(final String role, final String clientId) {
+        return roles.containsKey(new RoleKey(role, clientId, RoleType.CLIENT));
+    }
+
+    /**
+     * Checks if the user has the specified Realm role.
+     * @param role role to be checked
+     * @return <code>true</code> or <code>false</code>
+     */
+    @Override
+    public boolean hasRealmRole(final String role){
+        return roles.containsKey(new RoleKey(role, null, RoleType.REALM));
     }
 
     @Override

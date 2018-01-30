@@ -18,7 +18,7 @@ public class UserPrincipalImplTest {
     public void setUp(){
         AuthServiceConfig authServiceConfig = new AuthServiceConfig();
         AbstractAuthenticator abstractAuthenticator = new AbstractAuthenticator(authServiceConfig);
-        ClientRole cRole = new ClientRole("cRole");
+        ClientRole cRole = new ClientRole("cRole", "ID-123456");
         RealmRole rRole = new RealmRole("rRole");
         IRole[] roles = {cRole, rRole};
         userPrincipalImpl = UserPrincipalImpl.newUser().withRoles(roles).withAuthenticator(abstractAuthenticator).build();
@@ -30,15 +30,24 @@ public class UserPrincipalImplTest {
     }
 
     @Test
-    public void testHasRoleFails(){
-        assertEquals(userPrincipalImpl.hasRole("rRole", RoleType.CLIENT), false);
-        assertEquals(userPrincipalImpl.hasRole("notRole", RoleType.REALM), false);
+    public void testHasRealmRoleFails(){
+        assertEquals(userPrincipalImpl.hasRealmRole("notRRole"), false);
     }
 
     @Test
-    public void testHasRoleSucceeds(){
-        assertEquals(userPrincipalImpl.hasRole("cRole", RoleType.CLIENT), true);
-       assertEquals(userPrincipalImpl.hasRole("rRole", RoleType.REALM), true);
+    public void testHasRealmRoleSucceeds(){
+        assertEquals(userPrincipalImpl.hasRealmRole("rRole"), true);
+    }
 
+    @Test
+    public void testHasClientRoleFails(){
+        assertEquals(userPrincipalImpl.hasClientRole("cRole", "notid"), false);
+        assertEquals(userPrincipalImpl.hasClientRole("notCRole", "ID-123456"), false);
+        assertEquals(userPrincipalImpl.hasClientRole("notCRole", "notid"), false);
+    }
+
+    @Test
+    public void testHasClientRoleSucceeds(){
+        assertEquals(userPrincipalImpl.hasClientRole("cRole", "ID-123456"), true);
     }
 }

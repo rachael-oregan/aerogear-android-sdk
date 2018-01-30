@@ -14,8 +14,9 @@ public class RoleKey {
         this.clientID = clientID;
     }
 
-    public RoleKey(final String roleName, final RoleType roleType){
+    public RoleKey(final String roleName,final String clientId, final RoleType roleType){
         this.roleName = roleName;
+        this.clientID = clientId;
         this.roleType = roleType;
     }
 

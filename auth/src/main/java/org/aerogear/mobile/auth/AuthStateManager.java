@@ -2,10 +2,24 @@ package org.aerogear.mobile.auth;
 
 import static org.aerogear.mobile.core.utils.SanityCheck.nonNull;
 
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.UnrecoverableEntryException;
+import java.security.cert.CertificateException;
+
+import javax.crypto.NoSuchPaddingException;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 
 import org.aerogear.mobile.auth.credentials.OIDCCredentials;
+
+import devliving.online.securedpreferencestore.DefaultRecoveryHandler;
+import devliving.online.securedpreferencestore.SecuredPreferenceStore;
 
 /**
  * Saves, retrieves and delete a token.
@@ -13,19 +27,25 @@ import org.aerogear.mobile.auth.credentials.OIDCCredentials;
 public class AuthStateManager {
 
     private static AuthStateManager instance = null;
-    private static final String STORE_NAME = "org.aerogear.android.auth.AuthState";
     private static final String KEY_STATE = "state";
 
-    private final SharedPreferences prefs;
+    private SecuredPreferenceStore prefs;
 
     private AuthStateManager(final Context context) {
-        this.prefs = nonNull(context, "context").getSharedPreferences(STORE_NAME,
-                        Context.MODE_PRIVATE);
+        try {
+            SecuredPreferenceStore.init(context, new DefaultRecoveryHandler());
+            prefs = SecuredPreferenceStore.getSharedInstance();
+        } catch (IOException | CertificateException | NoSuchAlgorithmException
+                        | UnrecoverableEntryException | KeyStoreException | NoSuchPaddingException
+                        | InvalidAlgorithmParameterException | NoSuchProviderException
+                        | InvalidKeyException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
      * Reads credentials from storage.
-     * 
+     *
      * @return OIDCCredentials
      */
     public OIDCCredentials load() {
@@ -38,7 +58,7 @@ public class AuthStateManager {
 
     /**
      * Saves a token
-     * 
+     *
      * @param authState token to be saved
      * @throws IllegalStateException if the state can not be saved
      */
@@ -55,7 +75,7 @@ public class AuthStateManager {
 
     /**
      * Deletes a token
-     * 
+     *
      * @throws IllegalArgumentException if the state can not be cleared
      */
     public synchronized void clear() {

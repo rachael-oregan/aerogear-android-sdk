@@ -38,6 +38,7 @@ dependencies {
     implementation "com.android.support:customtabs:${project.ext.android_support_version}"
     implementation "org.bitbucket.b_c:jose4j:${project.ext.jose4j_version}"
     implementation "com.scottyab:rootbeer-lib:${project.ext.rootbeer_version}"
+    implementation "online.devliving:securedpreferencestore:${project.ext.secured_preference_store}"
 
     testImplementation "junit:junit:${project.ext.junit_version}"
     testImplementation "org.mockito:mockito-core:${project.ext.mockito_version}"
